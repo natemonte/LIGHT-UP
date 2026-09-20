@@ -44,8 +44,10 @@ CREATE TABLE IF NOT EXISTS jobs (
     customer_id        INTEGER NOT NULL REFERENCES customers(id),
     title              TEXT NOT NULL,             -- e.g. "Roofline lights - 120ft"
     status             TEXT NOT NULL DEFAULT 'quote',  -- quote | scheduled | in_progress | completed | paid | cancelled
-    scheduled_date     TEXT,
+    scheduled_date     TEXT,             -- install date
     completed_date     TEXT,
+    takedown_date      TEXT,             -- when lights should come down
+    takedown_completed_date TEXT,
     materials_cost     REAL DEFAULT 0,
     labor_cost         REAL DEFAULT 0,
     price_quoted       REAL DEFAULT 0,

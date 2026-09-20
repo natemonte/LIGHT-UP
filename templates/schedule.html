@@ -1,26 +1,47 @@
 {% extends "base.html" %}
 {% block title %}Schedule{% endblock %}
 {% block content %}
-<h1>Next 3 weeks</h1>
+<h1>Installs &amp; Takedowns</h1>
+<div class="flex mb-16">
+  <a href="{{ url_for('schedule', days=14) }}" class="btn btn-outline btn-sm{{ ' btn-active' if days == 14 else '' }}">Next 2 weeks</a>
+  <a href="{{ url_for('schedule', days=30) }}" class="btn btn-outline btn-sm{{ ' btn-active' if days == 30 else '' }}">Next 30 days</a>
+  <a href="{{ url_for('schedule', days=90) }}" class="btn btn-outline btn-sm{{ ' btn-active' if days == 90 else '' }}">Next 90 days</a>
+</div>
 {% if by_date %}
-  {% for d, jobs in by_date.items() %}
+  {% for d, events in by_date.items() %}
   <div class="card">
     <h2>{{ d }}{{ ' (today)' if d == today }}</h2>
     <table>
-      <tr><th>Customer</th><th>Job</th><th>Address</th><th>Phone</th><th></th></tr>
-      {% for j in jobs %}
+      <tr><th></th><th>Customer</th><th>Job</th><th>Address</th><th>Phone</th><th></th><th></th></tr>
+      {% for ev in events %}
+      {% set j = ev.job %}
       <tr>
+        <td>
+          {% if ev.type == 'install' %}
+            <span class="badge badge-install">Install</span>
+          {% else %}
+            <span class="badge badge-takedown">Takedown</span>
+          {% endif %}
+        </td>
         <td>{{ j['first_name'] }} {{ j['last_name'] }}</td>
         <td>{{ j['title'] }}</td>
         <td class="muted">{{ j['address'] or '—' }}</td>
         <td>{{ j['phone'] or '—' }}</td>
         <td><a href="{{ url_for('job_detail', job_id=j['id']) }}" class="btn btn-outline btn-sm">Open</a></td>
+        <td>
+          {% if ev.type == 'takedown' %}
+          <form method="post" action="{{ url_for('job_takedown_done', job_id=j['id']) }}" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-sm">Mark taken down</button>
+          </form>
+          {% endif %}
+        </td>
       </tr>
       {% endfor %}
     </table>
   </div>
   {% endfor %}
 {% else %}
-<div class="card"><p class="muted">Nothing scheduled in the next 3 weeks. Set a "scheduled date" on a job to see it here.</p></div>
+<div class="card"><p class="muted">Nothing scheduled in this window. Set an "install date" or "takedown date" on a job to see it here.</p></div>
 {% endif %}
 {% endblock %}

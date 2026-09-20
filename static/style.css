@@ -125,10 +125,14 @@ textarea { min-height: 80px; }
 .badge-completed { background: #e7f5ec; color: #0f4a28; }
 .badge-paid { background: #1a6e3c; color: white; }
 .badge-cancelled { background: #fdeaea; color: #7a1f22; }
+.badge-install { background: #e7f5ec; color: #0f4a28; }
+.badge-takedown { background: #fdeee0; color: #8a3b00; }
 
 .muted { color: var(--muted); }
 .mb-0 { margin-bottom: 0; }
+.mb-16 { margin-bottom: 16px; }
 .mt-16 { margin-top: 16px; }
+.btn-active { background: var(--accent, #1a6e3c); color: white; }
 .flex { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
 

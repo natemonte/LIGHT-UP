@@ -110,6 +110,31 @@ def main():
     quote_token = extract_quote_token(r.data)
     check("job has a public quote token", quote_token is not None)
 
+    print("Install/takedown scheduling")
+    from datetime import date, timedelta
+    install_date = (date.today() + timedelta(days=5)).isoformat()
+    takedown_date = (date.today() + timedelta(days=10)).isoformat()
+    r = client.get("/jobs/1/edit")
+    token = extract_csrf(r.data)
+    r = client.post("/jobs/1/edit", data={
+        "title": "Roofline Lights", "materials_cost": "200", "labor_cost": "150",
+        "price_quoted": "800", "scheduled_date": install_date, "takedown_date": takedown_date,
+        "csrf_token": token,
+    })
+    check("saving install/takedown dates redirects", r.status_code == 302)
+    r = client.get("/jobs/1")
+    check("job detail shows takedown date", takedown_date.encode() in r.data)
+    r = client.get("/schedule?days=30")
+    check("schedule page loads with days param", r.status_code == 200)
+    check("schedule shows the install badge", b"badge-install" in r.data)
+    check("schedule shows the takedown badge", b"badge-takedown" in r.data)
+    token = extract_csrf(r.data)
+    check("schedule page has a csrf token for the mark-done form", token is not None)
+    r = client.post("/jobs/1/takedown_done", data={"csrf_token": token})
+    check("marking takedown done redirects", r.status_code == 302)
+    r = client.get("/schedule?days=30")
+    check("completed takedown drops off the schedule", b"badge-takedown" not in r.data)
+
     print("Customer-facing quote link (no login)")
     anon_client = appmodule.app.test_client()  # separate client = no session cookie
     r = anon_client.get(f"/q/{quote_token}")

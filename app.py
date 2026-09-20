@@ -341,13 +341,14 @@ def job_new(customer_id):
     customer = get_or_404("SELECT * FROM customers WHERE id = ?", (customer_id,), "Customer not found")
     if request.method == "POST":
         jid = execute(
-            "INSERT INTO jobs (customer_id, title, status, scheduled_date, materials_cost, "
+            "INSERT INTO jobs (customer_id, title, status, scheduled_date, takedown_date, materials_cost, "
             "labor_cost, price_quoted, next_service_date, next_estimated_price, notes, public_token) "
-            "VALUES (?, ?, 'quote', ?, ?, ?, ?, ?, ?, ?, ?)",
+            "VALUES (?, ?, 'quote', ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 customer_id,
                 request.form["title"],
                 request.form.get("scheduled_date") or None,
+                request.form.get("takedown_date") or None,
                 float(request.form.get("materials_cost") or 0),
                 float(request.form.get("labor_cost") or 0),
                 float(request.form.get("price_quoted") or 0),
@@ -392,11 +393,12 @@ def job_edit(job_id):
     customer = query("SELECT * FROM customers WHERE id = ?", (job["customer_id"],), one=True)
     if request.method == "POST":
         execute(
-            "UPDATE jobs SET title=?, scheduled_date=?, materials_cost=?, labor_cost=?, "
+            "UPDATE jobs SET title=?, scheduled_date=?, takedown_date=?, materials_cost=?, labor_cost=?, "
             "price_quoted=?, next_service_date=?, next_estimated_price=?, notes=? WHERE id=?",
             (
                 request.form["title"],
                 request.form.get("scheduled_date") or None,
+                request.form.get("takedown_date") or None,
                 float(request.form.get("materials_cost") or 0),
                 float(request.form.get("labor_cost") or 0),
                 float(request.form.get("price_quoted") or 0),
@@ -409,6 +411,18 @@ def job_edit(job_id):
         flash("Job updated.", "success")
         return redirect(url_for("job_detail", job_id=job_id))
     return render_template("job_form.html", customer=customer, job=job)
+
+
+@app.route("/jobs/<int:job_id>/takedown_done", methods=["POST"])
+@login_required
+def job_takedown_done(job_id):
+    get_or_404("SELECT id FROM jobs WHERE id = ?", (job_id,), "Job not found")
+    execute(
+        "UPDATE jobs SET takedown_completed_date = ? WHERE id = ?",
+        (date.today().isoformat(), job_id),
+    )
+    flash("Takedown marked done.", "success")
+    return redirect(url_for("job_detail", job_id=job_id))
 
 
 @app.route("/jobs/<int:job_id>/status", methods=["POST"])
@@ -688,8 +702,10 @@ def schedule():
     from datetime import timedelta
 
     today = date.today()
-    horizon = (today + timedelta(days=21)).isoformat()
-    rows = query(
+    days = int(request.args.get("days", 30))
+    horizon = (today + timedelta(days=days)).isoformat()
+
+    installs = query(
         "SELECT jobs.*, customers.first_name, customers.last_name, customers.phone, customers.address "
         "FROM jobs JOIN customers ON customers.id = jobs.customer_id "
         "WHERE jobs.scheduled_date IS NOT NULL AND jobs.scheduled_date >= ? AND jobs.scheduled_date <= ? "
@@ -697,10 +713,25 @@ def schedule():
         "ORDER BY jobs.scheduled_date ASC",
         (today.isoformat(), horizon),
     )
+    takedowns = query(
+        "SELECT jobs.*, customers.first_name, customers.last_name, customers.phone, customers.address "
+        "FROM jobs JOIN customers ON customers.id = jobs.customer_id "
+        "WHERE jobs.takedown_date IS NOT NULL AND jobs.takedown_date >= ? AND jobs.takedown_date <= ? "
+        "AND jobs.takedown_completed_date IS NULL AND jobs.status NOT IN ('cancelled') "
+        "ORDER BY jobs.takedown_date ASC",
+        (today.isoformat(), horizon),
+    )
+
     by_date = {}
-    for r in rows:
-        by_date.setdefault(r["scheduled_date"], []).append(r)
-    return render_template("schedule.html", by_date=by_date, today=today.isoformat())
+    for r in installs:
+        by_date.setdefault(r["scheduled_date"], []).append({"type": "install", "job": r})
+    for r in takedowns:
+        by_date.setdefault(r["takedown_date"], []).append({"type": "takedown", "job": r})
+    by_date = dict(sorted(by_date.items()))
+
+    return render_template(
+        "schedule.html", by_date=by_date, today=today.isoformat(), days=days
+    )
 
 
 # ---------------------------------------------------------------- export --

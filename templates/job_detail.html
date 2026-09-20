@@ -67,6 +67,22 @@
 </div>
 
 <div class="card">
+  <h2>Install &amp; takedown</h2>
+  <p>Install date: <strong>{{ job['scheduled_date'] or '—' }}</strong></p>
+  {% if job['takedown_completed_date'] %}
+  <p>Taken down: <strong>{{ job['takedown_completed_date'] }}</strong></p>
+  {% else %}
+  <p>Takedown date: <strong>{{ job['takedown_date'] or '—' }}</strong></p>
+  {% if job['takedown_date'] %}
+  <form method="post" action="{{ url_for('job_takedown_done', job_id=job['id']) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="btn btn-outline btn-sm" type="submit">Mark taken down</button>
+  </form>
+  {% endif %}
+  {% endif %}
+</div>
+
+<div class="card">
   <h2>Renewal / next year</h2>
   <p>Next service date: <strong>{{ job['next_service_date'] or '—' }}</strong></p>
   <p>Estimated price next year: <strong>{{ job['next_estimated_price'] | money }}</strong></p>

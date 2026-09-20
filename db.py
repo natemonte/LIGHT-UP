@@ -45,6 +45,10 @@ def _run_migrations():
         conn.execute(
             "CREATE UNIQUE INDEX IF NOT EXISTS idx_jobs_public_token ON jobs(public_token)"
         )
+    if "takedown_date" not in cols:
+        conn.execute("ALTER TABLE jobs ADD COLUMN takedown_date TEXT")
+    if "takedown_completed_date" not in cols:
+        conn.execute("ALTER TABLE jobs ADD COLUMN takedown_completed_date TEXT")
     conn.commit()
     conn.close()
 
