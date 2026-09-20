@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Leads{% endblock %}
+{% block content %}
+<h1>Leads</h1>
+
+<div class="card">
+  <h2>🧪 Simulate a new lead</h2>
+  <p class="muted">This is exactly what will happen automatically once your website form / Facebook ads are wired up: a lead lands here and you get texted right away.</p>
+  <form method="post" action="{{ url_for('leads_simulate') }}" class="flex">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <select name="source">
+      <option value="website">Website</option>
+      <option value="facebook_ad">Facebook ad</option>
+      <option value="referral">Referral</option>
+    </select>
+    <button class="btn" type="submit">Simulate lead + send me a text</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>All leads</h2>
+  {% if leads %}
+  <table>
+    <tr><th>Name / phone</th><th>Source</th><th>You notified?</th><th>When</th><th></th></tr>
+    {% for l in leads %}
+    <tr>
+      <td>{{ l['name'] or l['phone'] or l['email'] or '—' }}</td>
+      <td>{{ l['number_label'] or l['source'] }}</td>
+      <td>{{ 'Yes' if l['notified'] else 'Pending' }}</td>
+      <td class="muted">{{ l['created_at'] }}</td>
+      <td>
+        {% if l['customer_id'] %}
+        <a href="{{ url_for('customer_detail', customer_id=l['customer_id']) }}" class="btn btn-outline btn-sm">View customer</a>
+        {% else %}
+        <form method="post" action="{{ url_for('lead_convert', lead_id=l['id']) }}" class="inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-sm" type="submit">Convert to customer</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No leads yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h3>For later: connecting a real website form or Facebook Lead Ads</h3>
+  <p class="muted">Point your form (or a Zapier "New Lead Ad" trigger) at this URL with a POST of JSON <code>{name, phone, email, source, message}</code>:</p>
+  <p><code>{{ request.url_root }}leads/intake</code></p>
+</div>
+{% endblock %}

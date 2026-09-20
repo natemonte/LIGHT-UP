@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<h1>Settings</h1>
+
+<div class="card">
+  <h2>Stripe (payments)</h2>
+  <p class="muted">Paste your Stripe <strong>test</strong> secret key here first (starts with <code>sk_test_</code>) to try real Stripe Checkout without risking real money. Switch to a live key only once you're ready to actually get paid.</p>
+  <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Stripe secret key</label>
+    <input name="stripe_secret_key" value="{{ stripe_secret_key }}" placeholder="sk_test_...">
+
+    <h2 class="mt-16">Quo (calls & texting)</h2>
+    <label>Quo API key</label>
+    <input name="quo_api_key" value="{{ quo_api_key }}" placeholder="Paste from Quo Settings → API">
+    <label>Quo API base URL (leave default unless Quo tells you otherwise)</label>
+    <input name="quo_api_base" value="{{ quo_api_base }}">
+
+    <h2 class="mt-16">Alerts</h2>
+    <label>Your cell number (where "new lead" texts go)</label>
+    <input name="owner_phone" value="{{ owner_phone }}" placeholder="+15551234567">
+
+    <label>Missed-call auto-text message</label>
+    <textarea name="missed_call_message">{{ missed_call_message }}</textarea>
+
+    <h2 class="mt-16">Email alerts (optional, in addition to texts)</h2>
+    <p class="muted">Fill this in if you also want new-lead emails, not just texts. Leave blank to skip email entirely -- texting still works either way.</p>
+    <label>Your email (where "new lead" emails go)</label>
+    <input name="owner_email" type="email" value="{{ owner_email }}" placeholder="you@example.com">
+    <div class="grid grid-2">
+      <div><label>SMTP host</label><input name="smtp_host" value="{{ smtp_host }}" placeholder="e.g. smtp.gmail.com"></div>
+      <div><label>SMTP port</label><input name="smtp_port" value="{{ smtp_port }}" placeholder="587"></div>
+    </div>
+    <div class="grid grid-2">
+      <div><label>SMTP username</label><input name="smtp_user" value="{{ smtp_user }}"></div>
+      <div><label>SMTP password {% if email_live %}<span class="muted">(already saved -- leave blank to keep it)</span>{% endif %}</label><input name="smtp_password" type="password" placeholder="{{ '••••••••' if email_live else '' }}"></div>
+    </div>
+    <label>"From" address (optional, defaults to the SMTP username)</label>
+    <input name="smtp_from" value="{{ smtp_from }}">
+    <p class="muted" style="font-size:0.8rem;">Tip: a Gmail account works well here with a free <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">app password</a> (not your normal Gmail password) -- host smtp.gmail.com, port 587.</p>
+
+    <h2 class="mt-16">Hosting</h2>
+    <label>Public URL of this app (once deployed, e.g. https://yourcrm.up.railway.app)</label>
+    <input name="public_base_url" value="{{ public_base_url }}" placeholder="https://...">
+
+    <button class="btn mt-16" type="submit">Save settings</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Your data</h2>
+  <p class="muted">Download a spreadsheet-friendly copy of your data any time — good backup habit, and easy to open in Excel/Google Sheets.</p>
+  <div class="flex">
+    <a class="btn btn-outline btn-sm" href="{{ url_for('export_customers') }}">Export customers (CSV)</a>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('export_jobs') }}">Export jobs (CSV)</a>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('export_leads') }}">Export leads (CSV)</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Jobs{% endblock %}
+{% block content %}
+<h1>Jobs</h1>
+
+<div class="card">
+  <div class="flex">
+    <a class="btn btn-sm {{ 'btn-outline' if status }}" href="{{ url_for('jobs_list') }}">All</a>
+    {% for s in ['quote','scheduled','in_progress','completed','paid','cancelled'] %}
+    <a class="btn btn-sm {{ 'btn-outline' if status != s }}" href="{{ url_for('jobs_list', status=s) }}">{{ s }}</a>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card">
+  {% if jobs %}
+  <table>
+    <tr><th>Customer</th><th>Job</th><th>Status</th><th>Quoted</th><th>Paid</th></tr>
+    {% for j in jobs %}
+    <tr>
+      <td>{{ j['first_name'] }} {{ j['last_name'] }}</td>
+      <td><a href="{{ url_for('job_detail', job_id=j['id']) }}">{{ j['title'] }}</a></td>
+      <td><span class="badge badge-{{ j['status'] }}">{{ j['status'] }}</span></td>
+      <td>{{ j['price_quoted'] | money }}</td>
+      <td>{{ j['amount_paid'] | money }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No jobs match this filter.</p>
+  {% endif %}
+</div>
+{% endblock %}

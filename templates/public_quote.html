@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Quote from {{ customer['first_name'] }}'s lighting {% endblock %}
+{% block content %}
+<div class="login-wrap" style="max-width: 480px;">
+  <h1>🎄 Your Quote</h1>
+  <div class="card">
+    <h2 class="mb-0">{{ job['title'] }}</h2>
+    <p class="muted">For {{ customer['first_name'] }} {{ customer['last_name'] }}</p>
+
+    <table class="mt-16">
+      <tr><td>Total price</td><td style="text-align:right"><strong>{{ job['price_quoted'] | money }}</strong></td></tr>
+      {% if job['amount_paid'] and job['amount_paid'] > 0 %}
+      <tr><td>Already paid</td><td style="text-align:right">{{ job['amount_paid'] | money }}</td></tr>
+      {% endif %}
+      <tr><td><strong>Balance due</strong></td><td style="text-align:right"><strong>{{ balance | money }}</strong></td></tr>
+    </table>
+
+    {% if job['status'] == 'paid' or balance <= 0 %}
+      <p class="flash flash-success mt-16">This is paid in full. Thank you!</p>
+    {% else %}
+      <div class="mt-16">
+        <form method="post" action="{{ url_for('public_quote_pay', token=token) }}">
+          <input type="hidden" name="method" value="card">
+          <button class="btn" type="submit" style="width:100%">Pay {{ balance | money }} by card</button>
+        </form>
+        <p style="text-align:center; margin: 10px 0; color: var(--muted);">or</p>
+        <form method="post" action="{{ url_for('public_quote_pay', token=token) }}">
+          <input type="hidden" name="method" value="ach">
+          <button class="btn btn-gold" type="submit" style="width:100%">Pay {{ ach_amount | money }} by bank transfer <span style="font-weight:400;">(save 3%)</span></button>
+        </form>
+      </div>
+    {% endif %}
+
+    {% if job['notes'] %}
+    <p class="mt-16 muted">{{ job['notes'] }}</p>
+    {% endif %}
+  </div>
+  <p class="muted" style="text-align:center; font-size:0.8rem;">Questions about this quote? Just reply to the text or call you got it from.</p>
+</div>
+{% endblock %}

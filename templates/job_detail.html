@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ job['title'] }}{% endblock %}
+{% block content %}
+<div class="flex-between">
+  <h1 class="mb-0">{{ job['title'] }}</h1>
+  <div class="flex">
+    <a class="btn btn-outline btn-sm" href="{{ url_for('job_edit', job_id=job['id']) }}">Edit</a>
+    <span class="badge badge-{{ job['status'] }}">{{ job['status'] }}</span>
+  </div>
+</div>
+<p><a href="{{ url_for('customer_detail', customer_id=customer['id']) }}">← {{ customer['first_name'] }} {{ customer['last_name'] }}</a></p>
+
+<div class="grid grid-3">
+  <div class="card stat"><div class="num">{{ job['price_quoted'] | money }}</div><div class="label">Quoted</div></div>
+  <div class="card stat"><div class="num">{{ (job['materials_cost'] + job['labor_cost']) | money }}</div><div class="label">Cost (materials+labor)</div></div>
+  <div class="card stat"><div class="num">{{ margin | money }}</div><div class="label">Margin</div></div>
+</div>
+
+<div class="card">
+  <h2>Status</h2>
+  <form method="post" action="{{ url_for('job_update_status', job_id=job['id']) }}" class="flex">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <select name="status">
+      {% for s in ['quote','scheduled','in_progress','completed','paid','cancelled'] %}
+      <option value="{{ s }}" {{ 'selected' if job['status']==s }}>{{ s }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-outline" type="submit">Update</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Customer quote/payment link</h2>
+  <p class="muted">Text or email this to the customer so they can review and pay it themselves, no login needed:</p>
+  <input readonly onclick="this.select()" value="{{ request.url_root.rstrip('/') }}{{ url_for('public_quote', token=public_token) }}">
+</div>
+
+<div class="card">
+  <h2>Take payment (or use the link above)</h2>
+  <p class="muted">Balance due: <strong>{{ (job['price_quoted'] - job['amount_paid']) | money }}</strong>{% if not stripe_live %} — <span>Stripe test key not set yet, this will use the simulated checkout so you can try the flow.</span>{% endif %}</p>
+  <div class="flex">
+    <form method="post" action="{{ url_for('job_pay', job_id=job['id']) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="method" value="card">
+      <button class="btn" type="submit">Charge card</button>
+    </form>
+    <form method="post" action="{{ url_for('job_pay', job_id=job['id']) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="method" value="ach">
+      <button class="btn btn-gold" type="submit">Pay by bank transfer (3% off)</button>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Payment history</h2>
+  {% if payments %}
+  <table>
+    <tr><th>Amount</th><th>Method</th><th>Status</th><th>When</th></tr>
+    {% for p in payments %}
+    <tr><td>{{ p['amount'] | money }}</td><td>{{ p['method'] }}</td><td>{{ p['status'] }}</td><td class="muted">{{ p['created_at'] }}</td></tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No payments recorded yet.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Renewal / next year</h2>
+  <p>Next service date: <strong>{{ job['next_service_date'] or '—' }}</strong></p>
+  <p>Estimated price next year: <strong>{{ job['next_estimated_price'] | money }}</strong></p>
+</div>
+
+{% if job['notes'] %}
+<div class="card"><h2>Notes</h2><p>{{ job['notes'] }}</p></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Phone numbers{% endblock %}
+{% block content %}
+<h1>Yard-sign / marketing numbers</h1>
+<p class="muted">Add each Quo number you're running, and tag it with which sign/campaign it's on. Every lead and every dollar of revenue gets tracked back to the number it came from.</p>
+
+<div class="card">
+  <h2>Add a number</h2>
+  <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="grid grid-2">
+      <div><label>Phone number (must match Quo exactly, e.g. +15551234567)</label><input name="number" required></div>
+      <div><label>Label</label><input name="label" placeholder="e.g. Blue Yard Sign" required></div>
+    </div>
+    <div class="grid grid-2">
+      <div><label>Campaign / where it's deployed</label><input name="campaign" placeholder="e.g. 50 signs, west side of town"></div>
+      <div><label>Monthly cost of this campaign ($, optional)</label><input name="monthly_cost" type="number" step="0.01" value="0"></div>
+    </div>
+    <button class="btn mt-16" type="submit">Add number</button>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Your numbers</h2>
+  {% if numbers %}
+  <table>
+    <tr><th>Label</th><th>Number</th><th>Campaign</th><th>Monthly cost</th></tr>
+    {% for n in numbers %}
+    <tr><td>{{ n['label'] }}</td><td>{{ n['number'] }}</td><td class="muted">{{ n['campaign'] or '—' }}</td><td>{{ n['monthly_cost'] | money }}</td></tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No numbers added yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

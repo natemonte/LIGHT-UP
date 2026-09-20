@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="grid grid-3">
+  {% set status_map = {} %}
+  {% for row in jobs_by_status %}{% set _ = status_map.update({row['status']: row}) %}{% endfor %}
+  <div class="card stat">
+    <div class="num">{{ status_map.get('quote', {}).get('n', 0) }}</div>
+    <div class="label">Open Quotes</div>
+  </div>
+  <div class="card stat">
+    <div class="num">{{ status_map.get('scheduled', {}).get('n', 0) + status_map.get('in_progress', {}).get('n', 0) }}</div>
+    <div class="label">Scheduled / In Progress</div>
+  </div>
+  <div class="card stat">
+    <div class="num">{{ (status_map.get('completed', {}).get('total', 0) + status_map.get('paid', {}).get('total', 0)) | money }}</div>
+    <div class="label">Completed Revenue</div>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <div class="flex-between">
+      <h2 class="mb-0">Recent leads</h2>
+      <a href="{{ url_for('leads_list') }}" class="btn btn-outline btn-sm">View all</a>
+    </div>
+    {% if recent_leads %}
+    <table>
+      <tr><th>Name</th><th>Source</th><th>When</th></tr>
+      {% for l in recent_leads %}
+      <tr>
+        <td>{{ l['name'] or l['phone'] or '—' }}</td>
+        <td>{{ l['number_label'] or l['source'] }}</td>
+        <td class="muted">{{ l['created_at'] }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p class="muted">No leads yet. Try the "Simulate lead" button on the Leads page to see how alerts work.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2>Upcoming renewals</h2>
+    {% if upcoming_renewals %}
+    <table>
+      <tr><th>Customer</th><th>Next date</th><th>Est. price</th></tr>
+      {% for j in upcoming_renewals %}
+      <tr>
+        <td><a href="{{ url_for('job_detail', job_id=j['id']) }}">{{ j['first_name'] }} {{ j['last_name'] }}</a></td>
+        <td>{{ j['next_service_date'] }}</td>
+        <td>{{ j['next_estimated_price'] | money }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+    {% else %}
+    <p class="muted">Nothing coming up. Set a "next service date" on a job to track next year's renewal.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="flex-between">
+    <h2 class="mb-0">Marketing ROI by number</h2>
+    <a href="{{ url_for('numbers') }}" class="btn btn-outline btn-sm">Manage numbers</a>
+  </div>
+  {% if roi_by_number %}
+  <table>
+    <tr><th>Number / Sign</th><th>Leads</th><th>Revenue</th><th>Monthly cost</th></tr>
+    {% for r in roi_by_number %}
+    <tr>
+      <td>{{ r['label'] }}<br><span class="muted">{{ r['campaign'] or '' }}</span></td>
+      <td>{{ r['lead_count'] }}</td>
+      <td>{{ r['revenue'] | money }}</td>
+      <td>{{ r['monthly_cost'] | money }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">Add your yard-sign numbers on the Numbers page to start tracking which one performs better.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Open jobs</h2>
+  {% if open_jobs %}
+  <table>
+    <tr><th>Customer</th><th>Job</th><th>Status</th><th>Quoted</th></tr>
+    {% for j in open_jobs %}
+    <tr>
+      <td><a href="{{ url_for('job_detail', job_id=j['id']) }}">{{ j['first_name'] }} {{ j['last_name'] }}</a></td>
+      <td>{{ j['title'] }}</td>
+      <td><span class="badge badge-{{ j['status'] }}">{{ j['status'] }}</span></td>
+      <td>{{ j['price_quoted'] | money }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No open jobs. <a href="{{ url_for('customers_list') }}">Add a customer</a> to create your first quote.</p>
+  {% endif %}
+</div>
+{% endblock %}

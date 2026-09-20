@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Customers{% endblock %}
+{% block content %}
+<div class="flex-between">
+  <h1 class="mb-0">Customers</h1>
+  <a class="btn" href="{{ url_for('customer_new') }}">+ Add customer</a>
+</div>
+
+<form method="get" class="card">
+  <label>Search</label>
+  <input type="text" name="q" value="{{ q }}" placeholder="Name, phone, or email">
+</form>
+
+<div class="card">
+  {% if customers %}
+  <table>
+    <tr><th>Name</th><th>Phone</th><th>Source</th><th></th></tr>
+    {% for c in customers %}
+    <tr>
+      <td><a href="{{ url_for('customer_detail', customer_id=c['id']) }}">{{ c['first_name'] }} {{ c['last_name'] }}</a></td>
+      <td>{{ c['phone'] or '—' }}</td>
+      <td class="muted">{{ c['lead_source'] or '—' }}</td>
+      <td><a href="{{ url_for('customer_detail', customer_id=c['id']) }}" class="btn btn-outline btn-sm">Open</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No customers yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Set up your CRM{% endblock %}
+{% block content %}
+<div class="login-wrap">
+  <h1>🎄 Set up your CRM</h1>
+  <div class="card">
+    <p class="muted">This runs once, right now, to create your owner login. This is your data only -- nothing here goes anywhere else.</p>
+    <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label>Your email (used to log in)</label>
+      <input type="email" name="email" required>
+      <label>Password</label>
+      <input type="password" name="password" required minlength="6">
+      <label>Your cell number (where lead alert texts get sent)</label>
+      <input type="tel" name="owner_phone" placeholder="+1 555 123 4567">
+      <button class="btn mt-16" type="submit" style="width:100%">Create my account</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
