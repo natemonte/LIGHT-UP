@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ customer['first_name'] }} {{ customer['last_name'] }}{% endblock %}
+{% block content %}
+<div class="flex-between">
+  <h1 class="mb-0">{{ customer['first_name'] }} {{ customer['last_name'] }}</h1>
+  <div class="flex">
+    <a class="btn btn-outline" href="{{ url_for('customer_edit', customer_id=customer['id']) }}">Edit</a>
+    <a class="btn" href="{{ url_for('job_new', customer_id=customer['id']) }}">+ New quote/job</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="grid grid-2">
+    <div><strong>Phone:</strong> {{ customer['phone'] or '—' }}</div>
+    <div><strong>Email:</strong> {{ customer['email'] or '—' }}</div>
+    <div><strong>Address:</strong> {{ customer['address'] or '—' }}</div>
+    <div><strong>Lead source:</strong> {{ customer['lead_source'] or '—' }}</div>
+  </div>
+  {% if customer['notes'] %}<p class="mt-16">{{ customer['notes'] }}</p>{% endif %}
+</div>
+
+<div class="card">
+  <h2>Jobs / quotes</h2>
+  {% if jobs %}
+  <table>
+    <tr><th>Title</th><th>Status</th><th>Quoted</th><th>Paid</th><th></th></tr>
+    {% for j in jobs %}
+    <tr>
+      <td>{{ j['title'] }}</td>
+      <td><span class="badge badge-{{ j['status'] }}">{{ j['status'] }}</span></td>
+      <td>{{ j['price_quoted'] | money }}</td>
+      <td>{{ j['amount_paid'] | money }}</td>
+      <td><a href="{{ url_for('job_detail', job_id=j['id']) }}" class="btn btn-outline btn-sm">Open</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No jobs yet for this customer.</p>
+  {% endif %}
+</div>
+{% endblock %}

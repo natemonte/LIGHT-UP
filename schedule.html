@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Schedule{% endblock %}
+{% block content %}
+<h1>Next 3 weeks</h1>
+{% if by_date %}
+  {% for d, jobs in by_date.items() %}
+  <div class="card">
+    <h2>{{ d }}{{ ' (today)' if d == today }}</h2>
+    <table>
+      <tr><th>Customer</th><th>Job</th><th>Address</th><th>Phone</th><th></th></tr>
+      {% for j in jobs %}
+      <tr>
+        <td>{{ j['first_name'] }} {{ j['last_name'] }}</td>
+        <td>{{ j['title'] }}</td>
+        <td class="muted">{{ j['address'] or '—' }}</td>
+        <td>{{ j['phone'] or '—' }}</td>
+        <td><a href="{{ url_for('job_detail', job_id=j['id']) }}" class="btn btn-outline btn-sm">Open</a></td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endfor %}
+{% else %}
+<div class="card"><p class="muted">Nothing scheduled in the next 3 weeks. Set a "scheduled date" on a job to see it here.</p></div>
+{% endif %}
+{% endblock %}

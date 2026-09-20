@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Lights CRM{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+  <link rel="icon" href="{{ url_for('static', filename='icon-192.png') }}">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon-192.png') }}">
+  <meta name="theme-color" content="#1a6e3c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+  {% if session.get('user_id') %}
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('dashboard') }}">🎄 Lights CRM</a>
+    <nav class="topnav">
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('customers_list') }}">Customers</a>
+      <a href="{{ url_for('jobs_list') }}">Jobs</a>
+      <a href="{{ url_for('schedule') }}">Schedule</a>
+      <a href="{{ url_for('calls_list') }}">Calls</a>
+      <a href="{{ url_for('leads_list') }}">Leads</a>
+      <a href="{{ url_for('reports') }}">Reports</a>
+      <a href="{{ url_for('numbers') }}">Numbers</a>
+      <a href="{{ url_for('settings_page') }}">Settings</a>
+      <a href="{{ url_for('logout') }}">Log out</a>
+    </nav>
+  </header>
+  <div class="mode-banner {{ 'live' if (stripe_live or quo_live) else '' }}">
+    Stripe: <strong>{{ 'LIVE test/real key set' if stripe_live else 'Simulated (no key set yet)' }}</strong>
+    &nbsp;|&nbsp;
+    Quo: <strong>{{ 'LIVE key set' if quo_live else 'Simulated (no key set yet)' }}</strong>
+    {% if email_configured %}&nbsp;|&nbsp;Email: <strong>LIVE</strong>{% endif %}
+    &nbsp;<a href="{{ url_for('settings_page') }}">Update in Settings →</a>
+  </div>
+  {% endif %}
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  {% if session.get('user_id') %}
+  <nav class="bottomnav">
+    <a href="{{ url_for('dashboard') }}">🏠<span>Home</span></a>
+    <a href="{{ url_for('customers_list') }}">👤<span>Customers</span></a>
+    <a href="{{ url_for('leads_list') }}">📞<span>Leads</span></a>
+    <a href="{{ url_for('reports') }}">📊<span>Reports</span></a>
+  </nav>
+  {% endif %}
+</body>
+</html>

@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<h1>Reports</h1>
+
+<div class="card">
+  <h2>Revenue by yard-sign number</h2>
+  {% if roi_by_number %}
+  {% for r in roi_by_number %}
+  <div class="barchart-row">
+    <div class="barchart-label">{{ r['label'] }}</div>
+    <div class="barchart-track">
+      <div class="barchart-fill" style="width: {{ ((r['revenue'] / max_revenue) * 100) | round(1) }}%"></div>
+    </div>
+    <div class="barchart-value">{{ r['revenue'] | money }}</div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <p class="muted">Add numbers on the Numbers page to see this.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Marketing ROI by yard-sign number (detail)</h2>
+  {% if roi_by_number %}
+  <table>
+    <tr><th>Number</th><th>Leads</th><th>Jobs</th><th>Revenue</th><th>Monthly cost</th><th>Net (this month)</th></tr>
+    {% for r in roi_by_number %}
+    <tr>
+      <td>{{ r['label'] }}<br><span class="muted">{{ r['campaign'] or '' }}</span></td>
+      <td>{{ r['lead_count'] }}</td>
+      <td>{{ r['job_count'] }}</td>
+      <td>{{ r['revenue'] | money }}</td>
+      <td>{{ r['monthly_cost'] | money }}</td>
+      <td>{{ (r['revenue'] - r['monthly_cost']) | money }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">Add numbers on the Numbers page to see this.</p>
+  {% endif %}
+</div>
+
+<div class="card">
+  <h2>Job cost vs. price (completed jobs)</h2>
+  {% if job_margins %}
+  <table>
+    <tr><th>Customer</th><th>Job</th><th>Cost</th><th>Quoted</th><th>Margin</th></tr>
+    {% for j in job_margins %}
+    <tr>
+      <td>{{ j['first_name'] }} {{ j['last_name'] }}</td>
+      <td>{{ j['title'] }}</td>
+      <td>{{ (j['materials_cost'] + j['labor_cost']) | money }}</td>
+      <td>{{ j['price_quoted'] | money }}</td>
+      <td>{{ (j['price_quoted'] - j['materials_cost'] - j['labor_cost']) | money }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No completed jobs yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit customer' if customer else 'Add customer' }}{% endblock %}
+{% block content %}
+<h1>{{ 'Edit ' + customer['first_name'] if customer else 'Add customer' }}</h1>
+<div class="card">
+  <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="grid grid-2">
+      <div><label>First name</label><input name="first_name" value="{{ customer['first_name'] if customer else '' }}" required></div>
+      <div><label>Last name</label><input name="last_name" value="{{ customer['last_name'] if customer else '' }}"></div>
+    </div>
+    <div class="grid grid-2">
+      <div><label>Phone</label><input name="phone" type="tel" value="{{ customer['phone'] if customer else '' }}"></div>
+      <div><label>Email</label><input name="email" type="email" value="{{ customer['email'] if customer else '' }}"></div>
+    </div>
+    <label>Address</label>
+    <input name="address" value="{{ customer['address'] if customer else '' }}">
+
+    <div class="grid grid-2">
+      <div>
+        <label>How did they find you?</label>
+        <select name="lead_source">
+          {% set cur_source = customer['lead_source'] if customer else 'missed_call' %}
+          <option value="missed_call" {{ 'selected' if cur_source=='missed_call' }}>Missed call / phone</option>
+          <option value="website" {{ 'selected' if cur_source=='website' }}>Website</option>
+          <option value="facebook_ad" {{ 'selected' if cur_source=='facebook_ad' }}>Facebook ad</option>
+          <option value="referral" {{ 'selected' if cur_source=='referral' }}>Referral</option>
+          <option value="other" {{ 'selected' if cur_source=='other' }}>Other</option>
+        </select>
+      </div>
+      <div>
+        <label>Which number did they call? (optional)</label>
+        <select name="source_number_id">
+          <option value="">— none / not applicable —</option>
+          {% for n in numbers %}
+          <option value="{{ n['id'] }}" {{ 'selected' if customer and customer['source_number_id']==n['id'] }}>{{ n['label'] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <label>Notes</label>
+    <textarea name="notes">{{ customer['notes'] if customer else '' }}</textarea>
+
+    <button class="btn mt-16" type="submit">Save customer</button>
+  </form>
+</div>
+{% endblock %}

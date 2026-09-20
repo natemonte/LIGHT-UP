@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Calls{% endblock %}
+{% block content %}
+<h1>Calls & texts</h1>
+
+<div class="card">
+  <h2>🧪 Simulate a missed call</h2>
+  <p class="muted">Use this to see the whole flow work end to end: auto-text reply sent to the caller, a lead logged, and a text sent to you.</p>
+  <form method="post" action="{{ url_for('calls_simulate') }}" class="grid grid-2">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <label>Which number got the "call"?</label>
+      <select name="phone_number_id">
+        {% if numbers %}
+          {% for n in numbers %}
+          <option value="{{ n['id'] }}">{{ n['label'] }} ({{ n['number'] }})</option>
+          {% endfor %}
+        {% else %}
+        <option value="">(no numbers added yet — add one on the Numbers page)</option>
+        {% endif %}
+      </select>
+    </div>
+    <div>
+      <label>Fake caller's number</label>
+      <input name="fake_caller" value="+15559998888">
+    </div>
+    <div style="grid-column: 1 / -1;">
+      <button class="btn mt-16" type="submit">Simulate missed call</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Call/text log</h2>
+  {% if calls %}
+  <table>
+    <tr><th>Type</th><th>From</th><th>Number</th><th>Auto-reply?</th><th>When</th></tr>
+    {% for c in calls %}
+    <tr>
+      <td>{{ c['event_type'] }}</td>
+      <td>{{ c['from_number'] or '—' }}</td>
+      <td>{{ c['number_label'] or '—' }}</td>
+      <td>{{ 'Yes' if c['auto_reply_sent'] else '—' }}</td>
+      <td class="muted">{{ c['created_at'] }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <p class="muted">No call events yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

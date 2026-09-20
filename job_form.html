@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit job' if job else 'New quote' }}{% endblock %}
+{% block content %}
+<h1>{{ 'Edit job for' if job else 'New quote for' }} {{ customer['first_name'] }} {{ customer['last_name'] }}</h1>
+<div class="card">
+  <form method="post">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label>Job title</label>
+    <input name="title" placeholder="e.g. Rooflines + 2 trees" value="{{ job['title'] if job else '' }}" required>
+
+    <div class="grid grid-2">
+      <div><label>Materials cost ($)</label><input name="materials_cost" type="number" step="0.01" value="{{ job['materials_cost'] if job else 0 }}"></div>
+      <div><label>Labor cost ($)</label><input name="labor_cost" type="number" step="0.01" value="{{ job['labor_cost'] if job else 0 }}"></div>
+    </div>
+    <label>Price you're quoting the customer ($)</label>
+    <input name="price_quoted" type="number" step="0.01" value="{{ job['price_quoted'] if job else '' }}" required>
+
+    <label>Scheduled date (optional)</label>
+    <input name="scheduled_date" type="date" value="{{ job['scheduled_date'] if job else '' }}">
+
+    <div class="grid grid-2">
+      <div><label>Next year's service date (renewal tracking)</label><input name="next_service_date" type="date" value="{{ job['next_service_date'] if job else '' }}"></div>
+      <div><label>Estimated price next year ($)</label><input name="next_estimated_price" type="number" step="0.01" value="{{ job['next_estimated_price'] if job else '' }}"></div>
+    </div>
+
+    <label>Notes</label>
+    <textarea name="notes">{{ job['notes'] if job else '' }}</textarea>
+
+    <button class="btn mt-16" type="submit">{{ 'Save changes' if job else 'Create quote' }}</button>
+  </form>
+</div>
+{% endblock %}
