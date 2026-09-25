@@ -100,15 +100,27 @@ def main():
     token = extract_csrf(r.data)
     r = client.post("/customers/1/jobs/new", data={
         "title": "Roofline Lights", "materials_cost": "200", "labor_cost": "150",
-        "price_quoted": "800", "csrf_token": token,
+        "price_quoted": "800", "footage": "120", "price_per_foot": "6.67", "csrf_token": token,
     })
     check("create quote redirects", r.status_code == 302)
 
     r = client.get("/jobs/1")
     check("job detail page loads", r.status_code == 200)
     check("job detail shows margin", b"$450.00" in r.data)
+    check("job detail shows internal footage pricing", b"120.0 ft" in r.data)
     quote_token = extract_quote_token(r.data)
     check("job has a public quote token", quote_token is not None)
+
+    print("Lease/maintenance terms and footage privacy")
+    r = client.get("/settings")
+    token = extract_csrf(r.data)
+    r = client.post("/settings", data={
+        "lease_terms": "Test lease clause: lights stay ours, we maintain them.", "csrf_token": token,
+    })
+    check("saving lease terms redirects", r.status_code == 302)
+    r = client.get(f"/q/{quote_token}")
+    check("public quote shows the lease terms", b"Test lease clause" in r.data)
+    check("public quote never shows footage", b"120.0 ft" not in r.data and b"price_per_foot" not in r.data)
 
     print("Manual payment recording (Venmo/cash/check)")
     r = client.get("/settings")

@@ -12,8 +12,19 @@
       <div><label>Materials cost ($)</label><input name="materials_cost" type="number" step="0.01" value="{{ job['materials_cost'] if job else 0 }}"></div>
       <div><label>Labor cost ($)</label><input name="labor_cost" type="number" step="0.01" value="{{ job['labor_cost'] if job else 0 }}"></div>
     </div>
-    <label>Price you're quoting the customer ($)</label>
-    <input name="price_quoted" type="number" step="0.01" value="{{ job['price_quoted'] if job else '' }}" required>
+
+    <div class="grid grid-2">
+      <div><label>Footage (ft) <span class="muted">-- internal only, never shown to customer</span></label><input id="footage" name="footage" type="number" step="0.01" value="{{ job['footage'] if job else '' }}"></div>
+      <div><label>Price per foot ($) <span class="muted">-- internal only, never shown to customer</span></label><input id="price_per_foot" name="price_per_foot" type="number" step="0.01" value="{{ job['price_per_foot'] if job else '' }}"></div>
+    </div>
+    <button type="button" class="btn btn-outline btn-sm" onclick="
+      var ft = parseFloat(document.getElementById('footage').value) || 0;
+      var rate = parseFloat(document.getElementById('price_per_foot').value) || 0;
+      if (ft && rate) { document.getElementById('price_quoted').value = (ft * rate).toFixed(2); }
+    ">Calculate total from footage</button>
+
+    <label class="mt-16">Price you're quoting the customer ($) <span class="muted">-- this is the only number the customer sees</span></label>
+    <input id="price_quoted" name="price_quoted" type="number" step="0.01" value="{{ job['price_quoted'] if job else '' }}" required>
 
     <div class="grid grid-2">
       <div><label>Install date (optional)</label><input name="scheduled_date" type="date" value="{{ job['scheduled_date'] if job else '' }}"></div>

@@ -16,6 +16,10 @@
   <div class="card stat"><div class="num">{{ margin | money }}</div><div class="label">Margin</div></div>
 </div>
 
+{% if job['footage'] %}
+<p class="muted">Internal pricing note: {{ job['footage'] }} ft × {{ job['price_per_foot'] | money }}/ft. This never shows to the customer -- they only see the total.</p>
+{% endif %}
+
 <div class="card">
   <h2>Status</h2>
   <form method="post" action="{{ url_for('job_update_status', job_id=job['id']) }}" class="flex">

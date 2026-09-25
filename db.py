@@ -49,6 +49,10 @@ def _run_migrations():
         conn.execute("ALTER TABLE jobs ADD COLUMN takedown_date TEXT")
     if "takedown_completed_date" not in cols:
         conn.execute("ALTER TABLE jobs ADD COLUMN takedown_completed_date TEXT")
+    if "footage" not in cols:
+        conn.execute("ALTER TABLE jobs ADD COLUMN footage REAL")
+    if "price_per_foot" not in cols:
+        conn.execute("ALTER TABLE jobs ADD COLUMN price_per_foot REAL")
     conn.commit()
     conn.close()
 

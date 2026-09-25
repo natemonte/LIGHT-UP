@@ -48,6 +48,8 @@ CREATE TABLE IF NOT EXISTS jobs (
     completed_date     TEXT,
     takedown_date      TEXT,             -- when lights should come down
     takedown_completed_date TEXT,
+    footage            REAL,             -- internal only, never shown to the customer
+    price_per_foot     REAL,             -- internal only, never shown to the customer
     materials_cost     REAL DEFAULT 0,
     labor_cost         REAL DEFAULT 0,
     price_quoted       REAL DEFAULT 0,

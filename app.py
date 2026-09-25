@@ -16,6 +16,15 @@ from notifications import notify_owner_new_lead
 
 SECRET_FILE = os.path.join(db.DATA_DIR, ".flask_secret")
 
+DEFAULT_LEASE_TERMS = (
+    "All lighting, wiring, timers, and related materials installed by us remain the property of the "
+    "Company at all times. This agreement is a seasonal lease of that equipment, not a sale -- the "
+    "customer does not own the installed lighting. The Company is responsible for installation, "
+    "routine maintenance during the lease term, and removal (takedown) of all equipment at the end of "
+    "the season. The customer agrees not to alter, relocate, or attempt to repair the equipment "
+    "themselves during the lease term."
+)
+
 
 def get_flask_secret():
     os.makedirs(os.path.dirname(SECRET_FILE), exist_ok=True)
@@ -120,6 +129,7 @@ def inject_globals():
         "email_configured": email_client.is_configured(),
         "current_year": datetime.now().year,
         "venmo_handle": get_setting("venmo_handle", ""),
+        "lease_terms": get_setting("lease_terms", DEFAULT_LEASE_TERMS),
     }
 
 
@@ -343,8 +353,8 @@ def job_new(customer_id):
     if request.method == "POST":
         jid = execute(
             "INSERT INTO jobs (customer_id, title, status, scheduled_date, takedown_date, materials_cost, "
-            "labor_cost, price_quoted, next_service_date, next_estimated_price, notes, public_token) "
-            "VALUES (?, ?, 'quote', ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "labor_cost, price_quoted, footage, price_per_foot, next_service_date, next_estimated_price, notes, public_token) "
+            "VALUES (?, ?, 'quote', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 customer_id,
                 request.form["title"],
@@ -353,6 +363,8 @@ def job_new(customer_id):
                 float(request.form.get("materials_cost") or 0),
                 float(request.form.get("labor_cost") or 0),
                 float(request.form.get("price_quoted") or 0),
+                float(request.form.get("footage") or 0) or None,
+                float(request.form.get("price_per_foot") or 0) or None,
                 request.form.get("next_service_date") or None,
                 float(request.form.get("next_estimated_price") or 0) or None,
                 request.form.get("notes", ""),
@@ -395,7 +407,7 @@ def job_edit(job_id):
     if request.method == "POST":
         execute(
             "UPDATE jobs SET title=?, scheduled_date=?, takedown_date=?, materials_cost=?, labor_cost=?, "
-            "price_quoted=?, next_service_date=?, next_estimated_price=?, notes=? WHERE id=?",
+            "price_quoted=?, footage=?, price_per_foot=?, next_service_date=?, next_estimated_price=?, notes=? WHERE id=?",
             (
                 request.form["title"],
                 request.form.get("scheduled_date") or None,
@@ -403,6 +415,8 @@ def job_edit(job_id):
                 float(request.form.get("materials_cost") or 0),
                 float(request.form.get("labor_cost") or 0),
                 float(request.form.get("price_quoted") or 0),
+                float(request.form.get("footage") or 0) or None,
+                float(request.form.get("price_per_foot") or 0) or None,
                 request.form.get("next_service_date") or None,
                 float(request.form.get("next_estimated_price") or 0) or None,
                 request.form.get("notes", ""),
@@ -840,6 +854,7 @@ def settings_page():
     if request.method == "POST":
         set_setting("stripe_secret_key", request.form.get("stripe_secret_key", "").strip())
         set_setting("venmo_handle", request.form.get("venmo_handle", "").strip())
+        set_setting("lease_terms", request.form.get("lease_terms", "").strip())
         set_setting("quo_api_key", request.form.get("quo_api_key", "").strip())
         set_setting("quo_api_base", request.form.get("quo_api_base", "").strip() or quo_client.QUO_API_BASE_DEFAULT)
         set_setting("owner_phone", request.form.get("owner_phone", "").strip())
@@ -858,6 +873,7 @@ def settings_page():
     ctx = {
         "stripe_secret_key": get_setting("stripe_secret_key", ""),
         "venmo_handle": get_setting("venmo_handle", ""),
+        "lease_terms": get_setting("lease_terms", DEFAULT_LEASE_TERMS),
         "quo_api_key": get_setting("quo_api_key", ""),
         "quo_api_base": get_setting("quo_api_base", quo_client.QUO_API_BASE_DEFAULT),
         "owner_phone": get_setting("owner_phone", ""),

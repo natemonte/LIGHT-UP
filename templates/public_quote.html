@@ -40,6 +40,12 @@
     {% if job['notes'] %}
     <p class="mt-16 muted">{{ job['notes'] }}</p>
     {% endif %}
+
+    {% if lease_terms %}
+    <div class="mt-16" style="border-top: 1px solid var(--border); padding-top: 12px;">
+      <p class="mb-0" style="font-size:0.8rem;"><strong>Lease &amp; maintenance terms:</strong> {{ lease_terms }}</p>
+    </div>
+    {% endif %}
   </div>
   <p class="muted" style="text-align:center; font-size:0.8rem;">Questions about this quote? Just reply to the text or call you got it from.</p>
 </div>

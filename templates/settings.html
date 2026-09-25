@@ -11,6 +11,10 @@
     <label>Stripe secret key</label>
     <input name="stripe_secret_key" value="{{ stripe_secret_key }}" placeholder="sk_test_...">
 
+    <h2 class="mt-16">Lease &amp; maintenance terms</h2>
+    <p class="muted">Shown to customers on every quote/pay link, under the price -- covers ownership, leasing, and maintenance of the installed lighting. Edit the wording any time; changes apply to every quote going forward.</p>
+    <textarea name="lease_terms" rows="6">{{ lease_terms }}</textarea>
+
     <h2 class="mt-16">Venmo Business</h2>
     <p class="muted">No card-processing fee to pass on, so it's usually your cheapest way to get paid. There's no API for this -- customers send you the money directly, and you log it on the job page once it lands.</p>
     <label>Venmo business handle</label>
