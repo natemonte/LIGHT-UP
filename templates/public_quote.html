@@ -28,6 +28,12 @@
           <input type="hidden" name="method" value="ach">
           <button class="btn btn-gold" type="submit" style="width:100%">Pay {{ ach_amount | money }} by bank transfer <span style="font-weight:400;">(save 3%)</span></button>
         </form>
+        {% if venmo_handle %}
+        <p style="text-align:center; margin: 10px 0; color: var(--muted);">or</p>
+        <div class="card" style="background: var(--bg-soft, #f7f7f7);">
+          <p class="mb-0">Prefer Venmo? Send <strong>{{ balance | money }}</strong> to <strong>{{ venmo_handle }}</strong> and include your name and "{{ job['title'] }}" in the note. We'll mark this paid once it comes through.</p>
+        </div>
+        {% endif %}
       </div>
     {% endif %}
 

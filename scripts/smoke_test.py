@@ -110,6 +110,23 @@ def main():
     quote_token = extract_quote_token(r.data)
     check("job has a public quote token", quote_token is not None)
 
+    print("Manual payment recording (Venmo/cash/check)")
+    r = client.get("/settings")
+    token = extract_csrf(r.data)
+    r = client.post("/settings", data={"venmo_handle": "@test-business", "csrf_token": token})
+    check("saving venmo handle redirects", r.status_code == 302)
+    r = client.get(f"/q/{quote_token}")
+    check("public quote shows the venmo handle", b"@test-business" in r.data)
+    r = client.get("/jobs/1")
+    token = extract_csrf(r.data)
+    r = client.post("/jobs/1/record_payment", data={
+        "method": "venmo", "amount": "300", "note": "test venmo payment", "csrf_token": token,
+    })
+    check("recording a venmo payment redirects", r.status_code == 302)
+    r = client.get("/jobs/1")
+    check("payment history shows the venmo payment", b"venmo" in r.data and b"$300.00" in r.data)
+    check("balance due dropped after the venmo payment", b"$500.00" in r.data)
+
     print("Install/takedown scheduling")
     from datetime import date, timedelta
     install_date = (date.today() + timedelta(days=5)).isoformat()

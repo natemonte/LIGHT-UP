@@ -119,6 +119,7 @@ def inject_globals():
         "quo_live": quo_client.is_live(),
         "email_configured": email_client.is_configured(),
         "current_year": datetime.now().year,
+        "venmo_handle": get_setting("venmo_handle", ""),
     }
 
 
@@ -453,6 +454,34 @@ def job_pay(job_id):
         (job_id, session_data["amount_cents"] / 100.0, method, session_data["id"]),
     )
     return redirect(session_data["url"])
+
+
+@app.route("/jobs/<int:job_id>/record_payment", methods=["POST"])
+@login_required
+def job_record_payment(job_id):
+    """For payment methods with no live API to confirm automatically --
+    Venmo, cash, check. You collect the money outside the app (e.g. a
+    customer sends Venmo to your business handle), then log it here so the
+    job's balance and payment history stay accurate."""
+    job = get_or_404("SELECT * FROM jobs WHERE id = ?", (job_id,), "Job not found")
+    method = request.form.get("method", "venmo")
+    amount = float(request.form.get("amount") or 0)
+    note = request.form.get("note", "").strip()
+    if amount <= 0:
+        flash("Enter an amount greater than $0.", "error")
+        return redirect(url_for("job_detail", job_id=job_id))
+    execute(
+        "INSERT INTO payments (job_id, amount, method, status, stripe_ref) VALUES (?, ?, ?, 'paid', ?)",
+        (job_id, amount, method, note or None),
+    )
+    new_paid = float(job["amount_paid"] or 0) + amount
+    new_status = "paid" if new_paid >= float(job["price_quoted"] or 0) else job["status"]
+    execute(
+        "UPDATE jobs SET amount_paid = ?, payment_method = ?, status = ? WHERE id = ?",
+        (new_paid, method, new_status, job_id),
+    )
+    flash(f"Recorded {method} payment of {money(amount)}.", "success")
+    return redirect(url_for("job_detail", job_id=job_id))
 
 
 @app.route("/q/<token>")
@@ -810,6 +839,7 @@ def reports():
 def settings_page():
     if request.method == "POST":
         set_setting("stripe_secret_key", request.form.get("stripe_secret_key", "").strip())
+        set_setting("venmo_handle", request.form.get("venmo_handle", "").strip())
         set_setting("quo_api_key", request.form.get("quo_api_key", "").strip())
         set_setting("quo_api_base", request.form.get("quo_api_base", "").strip() or quo_client.QUO_API_BASE_DEFAULT)
         set_setting("owner_phone", request.form.get("owner_phone", "").strip())
@@ -827,6 +857,7 @@ def settings_page():
 
     ctx = {
         "stripe_secret_key": get_setting("stripe_secret_key", ""),
+        "venmo_handle": get_setting("venmo_handle", ""),
         "quo_api_key": get_setting("quo_api_key", ""),
         "quo_api_base": get_setting("quo_api_base", quo_client.QUO_API_BASE_DEFAULT),
         "owner_phone": get_setting("owner_phone", ""),

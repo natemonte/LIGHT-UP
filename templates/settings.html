@@ -11,6 +11,11 @@
     <label>Stripe secret key</label>
     <input name="stripe_secret_key" value="{{ stripe_secret_key }}" placeholder="sk_test_...">
 
+    <h2 class="mt-16">Venmo Business</h2>
+    <p class="muted">No card-processing fee to pass on, so it's usually your cheapest way to get paid. There's no API for this -- customers send you the money directly, and you log it on the job page once it lands.</p>
+    <label>Venmo business handle</label>
+    <input name="venmo_handle" value="{{ venmo_handle }}" placeholder="@your-business-handle">
+
     <h2 class="mt-16">Quo (calls & texting)</h2>
     <label>Quo API key</label>
     <input name="quo_api_key" value="{{ quo_api_key }}" placeholder="Paste from Quo Settings → API">

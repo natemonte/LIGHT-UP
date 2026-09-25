@@ -53,6 +53,29 @@
 </div>
 
 <div class="card">
+  <h2>Venmo / cash / check</h2>
+  {% if venmo_handle %}
+  <p class="muted">Your Venmo business handle: <strong>{{ venmo_handle }}</strong>. Have the customer send the balance due there (no processing fee to pass on, unlike card), then log it below once it hits your account.</p>
+  {% else %}
+  <p class="muted">Add your Venmo business handle in <a href="{{ url_for('settings_page') }}">Settings</a> so it shows here and on the customer's quote link. In the meantime, you can still log a Venmo, cash, or check payment below.</p>
+  {% endif %}
+  <form method="post" action="{{ url_for('job_record_payment', job_id=job['id']) }}" class="grid grid-2">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <label>Method</label>
+      <select name="method">
+        <option value="venmo">Venmo</option>
+        <option value="cash">Cash</option>
+        <option value="check">Check</option>
+      </select>
+    </div>
+    <div><label>Amount received ($)</label><input name="amount" type="number" step="0.01" min="0.01" required></div>
+    <div style="grid-column: 1 / -1;"><label>Note (optional)</label><input name="note" placeholder="e.g. Venmo confirmation, check #"></div>
+    <div style="grid-column: 1 / -1;"><button class="btn btn-outline" type="submit">Record payment</button></div>
+  </form>
+</div>
+
+<div class="card">
   <h2>Payment history</h2>
   {% if payments %}
   <table>
